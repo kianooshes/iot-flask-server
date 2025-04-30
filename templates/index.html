@@ -63,7 +63,7 @@
             } else {
               marker.setLatLng([lat, lon]);
             }
-            marker.bindPopup(`📍 Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+            marker.bindPopup(`📍<br>Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`).openPopup();
             map.setView([lat, lon], map.getZoom());
           }
         }
@@ -72,7 +72,7 @@
       }
     }
 
-    setInterval(fetchAndUpdate, 2000);
+    setInterval(fetchAndUpdate, 500);
     fetchAndUpdate();
   </script>
 </body>
