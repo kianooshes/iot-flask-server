@@ -1,86 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IoT Device Location</title>
+  <meta charset="UTF-8">
+  <title>Live IoT Location</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
     body {
-      background-color: #121212;
-      color: #e0e0e0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: 0;
       height: 100vh;
+      background-color: #121212;
     }
-    .container {
-      background-color: #1e1e1e;
-      padding: 30px 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      text-align: center;
-      width: 320px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 22px;
-      color: #4CAF50;
-    }
-    .data-field {
-      margin-bottom: 15px;
-      font-size: 16px;
-    }
-    .label {
-      font-weight: 500;
-      color: #aaaaaa;
-    }
-    .value {
-      font-weight: bold;
-      font-size: 18px;
-      color: #ffffff;
-    }
-    .timestamp {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #888888;
+    #map {
+      height: 100vh;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Latest Device Location</h1>
-    <div class="data-field">
-      <span class="label">Latitude: </span>
-      <span class="value" id="lat">---</span>
-    </div>
-    <div class="data-field">
-      <span class="label">Longitude: </span>
-      <span class="value" id="lon">---</span>
-    </div>
-    <div class="timestamp" id="time">---</div>
-  </div>
+  <div id="map"></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    async function fetchData() {
+    const map = L.map('map').setView([35.6892, 51.3890], 10); // موقعیت اولیه
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    async function fetchAndUpdate() {
       try {
         const res = await fetch('/latest');
         const data = await res.json();
-        document.getElementById('lat').innerText = data.latitude ?? '---';
-        document.getElementById('lon').innerText = data.longitude ?? '---';
-        document.getElementById('time').innerText = data.timestamp ?? '---';
+
+        if (data.latitude && data.longitude) {
+          const lat = parseFloat(data.latitude);
+          const lon = parseFloat(data.longitude);
+
+          if (!isNaN(lat) && !isNaN(lon)) {
+            if (!marker) {
+              marker = L.marker([lat, lon]).addTo(map);
+            } else {
+              marker.setLatLng([lat, lon]);
+            }
+            marker.bindPopup(`📍 Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+            map.setView([lat, lon], map.getZoom());
+          }
+        }
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error("Error fetching location:", err);
       }
     }
 
-    setInterval(fetchData, 1000);
-    fetchData();
+    setInterval(fetchAndUpdate, 500); 
+    fetchAndUpdate(); 
   </script>
 </body>
 </html>
