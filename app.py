@@ -14,9 +14,16 @@ def index():
 def receive_data():
     global last_data
     data = request.get_json()
+
+    if 'lat' in data:
+        data['latitude'] = data.pop('lat')
+    if 'lon' in data:
+        data['longitude'] = data.pop('lon')
+
     data['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     last_data = data
     return jsonify({'status': 'success', 'message': 'Data received', 'data': data})
+
 
 @app.route('/latest')
 def latest_data():
