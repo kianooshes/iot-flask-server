@@ -35,8 +35,8 @@
             try {
                 const res = await fetch('/latest');
                 const data = await res.json();
-                document.getElementById('temp').innerText = data.temperature ?? '---';
-                document.getElementById('hum').innerText = data.humidity ?? '---';
+                document.getElementById('temp').innerText = data.latitude ?? '---';
+                document.getElementById('hum').innerText = data.longitude ?? '---';
                 document.getElementById('time').innerText = data.timestamp ?? '---';
             } catch (err) {
                 console.error('خطا در دریافت داده:', err);
