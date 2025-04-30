@@ -23,7 +23,7 @@ def latest_data():
     if last_data:
         return jsonify(last_data)
     else:
-        return jsonify({'temperature': None, 'humidity': None, 'timestamp': None})
+        return jsonify({'latitude': None, 'longitude': None, 'timestamp': None})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
