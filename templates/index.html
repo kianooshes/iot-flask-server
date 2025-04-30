@@ -1,50 +1,86 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>داده‌های IoT</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            direction: rtl;
-            background: #f3f3f3;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        #data-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            width: 300px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IoT Device Location</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #1e1e1e;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      width: 320px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #4CAF50;
+    }
+    .data-field {
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .label {
+      font-weight: 500;
+      color: #aaaaaa;
+    }
+    .value {
+      font-weight: bold;
+      font-size: 18px;
+      color: #ffffff;
+    }
+    .timestamp {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #888888;
+    }
+  </style>
 </head>
 <body>
-    <h1>آخرین داده از دستگاه IoT</h1>
-    <div id="data-box">
-        <p><strong>دما:</strong> <span id="temp">---</span></p>
-        <p><strong>رطوبت:</strong> <span id="hum">---</span></p>
-        <p><strong>زمان:</strong> <span id="time">---</span></p>
+  <div class="container">
+    <h1>Latest Device Location</h1>
+    <div class="data-field">
+      <span class="label">Latitude: </span>
+      <span class="value" id="lat">---</span>
     </div>
+    <div class="data-field">
+      <span class="label">Longitude: </span>
+      <span class="value" id="lon">---</span>
+    </div>
+    <div class="timestamp" id="time">---</div>
+  </div>
 
-    <script>
-        async function fetchData() {
-            try {
-                const res = await fetch('/latest');
-                const data = await res.json();
-                document.getElementById('temp').innerText = data.latitude ?? '---';
-                document.getElementById('hum').innerText = data.longitude ?? '---';
-                document.getElementById('time').innerText = data.timestamp ?? '---';
-            } catch (err) {
-                console.error('خطا در دریافت داده:', err);
-            }
-        }
+  <script>
+    async function fetchData() {
+      try {
+        const res = await fetch('/latest');
+        const data = await res.json();
+        document.getElementById('lat').innerText = data.latitude ?? '---';
+        document.getElementById('lon').innerText = data.longitude ?? '---';
+        document.getElementById('time').innerText = data.timestamp ?? '---';
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    }
 
-        setInterval(fetchData, 500);
-        fetchData(); 
-    </script>
+    setInterval(fetchData, 1000);
+    fetchData();
+  </script>
 </body>
 </html>
