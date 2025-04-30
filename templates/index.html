@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>داده‌های IoT</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            background: #f3f3f3;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #data-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>آخرین داده از دستگاه IoT</h1>
+    <div id="data-box">
+        <p><strong>دما:</strong> <span id="temp">---</span></p>
+        <p><strong>رطوبت:</strong> <span id="hum">---</span></p>
+        <p><strong>زمان:</strong> <span id="time">---</span></p>
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const res = await fetch('/latest');
+                const data = await res.json();
+                document.getElementById('temp').innerText = data.temperature ?? '---';
+                document.getElementById('hum').innerText = data.humidity ?? '---';
+                document.getElementById('time').innerText = data.timestamp ?? '---';
+            } catch (err) {
+                console.error('خطا در دریافت داده:', err);
+            }
+        }
+
+        setInterval(fetchData, 3000); // هر 3 ثانیه رفرش
+        fetchData(); // بار اول
+    </script>
+</body>
+</html>
