@@ -2,17 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Live IoT Location</title>
+  <title>MAS LTE Positioning - Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       margin: 0;
       background-color: #121212;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
     }
     .header {
       width: 100%;
@@ -28,25 +27,91 @@
       z-index: 1000;
     }
     #map {
-      height: 100vh;
+      height: 60vh;
       width: 100%;
-      margin-top: 60px; /* فضای هدر */
+      margin-top: 60px;
+    }
+    .content {
+      padding: 20px;
+    }
+    canvas {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .history {
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e1e1e;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background-color: #222;
+      color: #4CAF50;
+    }
+    .timestamp {
+      font-size: 12px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <div class="header">MAS LTE Positioning</div>
   <div id="map"></div>
+  <div class="content">
+    <canvas id="speedChart" width="400" height="100"></canvas>
+    <div class="history">
+      <h3>Location History</h3>
+      <table>
+        <thead>
+          <tr><th>Latitude</th><th>Longitude</th><th>Timestamp</th></tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const map = L.map('map').setView([35.6892, 51.3890], 10);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
     let marker = null;
+    let path = [];
+    let speedData = [];
+    let timeLabels = [];
+    const polyline = L.polyline([], { color: 'lime' }).addTo(map);
+
+    const ctx = document.getElementById('speedChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: timeLabels,
+        datasets: [{
+          label: 'Simulated Speed (km/h)',
+          data: speedData,
+          borderColor: '#4CAF50',
+          tension: 0.3,
+          fill: false
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#ffffff' } } },
+        scales: {
+          x: { ticks: { color: '#ffffff' } },
+          y: { ticks: { color: '#ffffff' }, beginAtZero: true }
+        }
+      }
+    });
 
     async function fetchAndUpdate() {
       try {
@@ -56,6 +121,7 @@
         if (data.latitude && data.longitude) {
           const lat = parseFloat(data.latitude);
           const lon = parseFloat(data.longitude);
+          const timestamp = data.timestamp;
 
           if (!isNaN(lat) && !isNaN(lon)) {
             if (!marker) {
@@ -63,8 +129,28 @@
             } else {
               marker.setLatLng([lat, lon]);
             }
-            marker.bindPopup(`📍<br>Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`).openPopup();
+
+            path.push([lat, lon]);
+            polyline.setLatLngs(path);
             map.setView([lat, lon], map.getZoom());
+
+            // Simulate speed and update chart
+            const speed = Math.floor(Math.random() * 80);
+            speedData.push(speed);
+            timeLabels.push(timestamp);
+            if (speedData.length > 10) {
+              speedData.shift();
+              timeLabels.shift();
+            }
+            chart.update();
+
+            // Add to history table
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${lat.toFixed(6)}</td><td>${lon.toFixed(6)}</td><td class="timestamp">${timestamp}</td>`;
+            document.getElementById('historyTable').prepend(row);
+            if (document.getElementById('historyTable').rows.length > 10) {
+              document.getElementById('historyTable').deleteRow(10);
+            }
           }
         }
       } catch (err) {
@@ -72,7 +158,7 @@
       }
     }
 
-    setInterval(fetchAndUpdate, 500);
+    setInterval(fetchAndUpdate, 3000);
     fetchAndUpdate();
   </script>
 </body>
