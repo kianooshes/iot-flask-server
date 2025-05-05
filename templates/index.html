@@ -131,30 +131,36 @@
         const res = await fetch('/latest');
         const data = await res.json();
 
-        if (data) {
-          if (marker) {
-            marker.remove();
-          }
-          path = [];
-          polyline.setLatLngs(path);
+        if (data.latitude && data.longitude) {
+          const lat = parseFloat(data.latitude);
+          const lon = parseFloat(data.longitude);
+          const timestamp = data.timestamp;
 
-          Object.values(data).forEach(cell => {
-            const lat = cell.lat;
-            const lon = cell.lon;
-            if (!isNaN(lat) && !isNaN(lon)) {
+          if (!isNaN(lat) && !isNaN(lon)) {
+            if (!marker) {
               marker = L.marker([lat, lon]).addTo(map);
-              path.push([lat, lon]);
+            } else {
+              marker.setLatLng([lat, lon]);
             }
-          });
 
-          polyline.setLatLngs(path);
+            path.push([lat, lon]);
+            polyline.setLatLngs(path);
+            map.setView([lat, lon], map.getZoom());
+
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${lat.toFixed(6)}</td><td>${lon.toFixed(6)}</td><td class="timestamp">${timestamp}</td>`;
+            document.getElementById('historyTable').prepend(row);
+            if (document.getElementById('historyTable').rows.length > 10) {
+              document.getElementById('historyTable').deleteRow(10);
+            }
+          }
         }
       } catch (err) {
         console.error("Error fetching location:", err);
       }
     }
 
-    setInterval(fetchAndUpdate, 1000);  
+    setInterval(fetchAndUpdate, 300);
     fetchAndUpdate();
   </script>
 </body>
